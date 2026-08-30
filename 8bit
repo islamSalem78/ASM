@@ -1,0 +1,808 @@
+Registers  8086
+
+الـ Register ببساطة مكان صغير جدًا وسريع جوه المعالج بيخزن قيمة مؤقتة.
+
+عندنا:
+
+AX
+BX
+CX
+DX
+
+وكل واحد فيهم 16-bit.
+
+مثلاً:
+
+MOV AX, 1234h
+
+يعني:
+
+AX
+┌────────────────┐
+│    1234h       │
+└────────────────┘
+      16 bit
+3. AH و AL
+
+الـ AX نفسه 16-bit، ممكن نقسمه لنصفين:
+
+AX
+┌────────┬────────┐
+│   AH   │   AL   │
+│ 8 bit  │ 8 bit  │
+└────────┴────────┘
+
+مثلاً:
+
+MOV AX, 1234h
+
+يبقى:
+
+AH = 12h
+AL = 34h
+
+ولو:
+
+MOV AH, 10h
+MOV AL, 25h
+
+يبقى:
+
+AX = 1025h
+
+ونفس الفكرة:
+
+BX → BH + BL
+CX → CH + CL
+DX → DH + DL
+4. Segment Registers
+
+دي نقطة مهمة جدًا في 8086.
+
+عندنا:
+
+CS → Code Segment
+DS → Data Segment
+SS → Stack Segment
+ES → Extra Segment
+
+فكر فيها كأن الذاكرة متقسمة لمناطق:
+
+Memory
+│
+├── Code Segment
+│     ↑
+│     CS
+│
+├── Data Segment
+│     ↑
+│     DS
+│
+├── Stack Segment
+│     ↑
+│     SS
+│
+└── Extra Segment
+      ↑
+      ES
+CS
+
+بيحدد المكان اللي فيه الكود/التعليمات.
+
+يعني الـ CPU لما ينفذ instruction، بيستخدم CS مع IP للوصول للتعليمة.
+
+CS:IP
+  │ │
+  │ └── مكان التعليمة الحالية
+  └──── Segment بتاع الكود
+DS
+
+غالبًا بيستخدم للوصول للـ Data.
+
+مثلاً:
+
+MOV AX, [num]
+
+المعالج يحتاج يعرف num موجود فين في الذاكرة، وهنا DS مهم.
+
+SS
+
+خاص بالـ Stack.
+
+مثلاً:
+
+PUSH AX
+POP BX
+
+الـ Stack مرتبط بـ:
+
+SS:SP
+5. Data Segment وتهيئة DS
+
+في برامج 8086/DOS التقليدية ممكن يكون عندك:
+
+.model small
+.stack 100h
+
+.data
+num dw 10
+
+.code
+main proc
+
+mov ax, @data
+mov ds, ax
+
+ليه؟
+
+لأنك بتقول للـ CPU:
+
+الـ DS لازم يشاور على المكان اللي فيه الـ Data بتاع البرنامج.
+
+وبعدها:
+
+MOV AX, num
+
+يقدر يجيب num.
+
+مثال:
+
+.data
+num DW 25
+
+.code
+
+MOV AX, @data
+MOV DS, AX
+
+MOV AX, num
+
+بعد آخر instruction:
+
+AX = 25
+6. MOV
+
+MOV معناها انسخ قيمة من مكان لمكان.
+
+مثلاً:
+
+MOV AX, 10
+
+يعني:
+
+AX ← 10
+
+مثال:
+
+MOV AX, 10
+MOV BX, AX
+
+النتيجة:
+
+AX = 10
+BX = 10
+
+لكن خد بالك:
+
+MOV AX, BX
+
+مش معناها إن AX وBX بقوا نفس الـ register.
+
+معناها:
+
+BX → AX
+
+يعني نسخ القيمة.
+
+7. ADD
+MOV AX, 10
+ADD AX, 5
+
+المعالج يعمل:
+
+AX = AX + 5
+
+فتصبح:
+
+AX = 15
+
+مثال:
+
+MOV AX, 10
+MOV BX, 20
+
+ADD AX, BX
+
+النتيجة:
+
+AX = 30
+BX = 20
+
+لأن:
+
+ADD AX, BX
+
+بتعدل الـ destination فقط.
+
+8. SUB
+
+نفس الفكرة:
+
+MOV AX, 20
+SUB AX, 5
+
+تصبح:
+
+AX = 15
+9. INC / DEC
+
+INC تزود 1:
+
+MOV AX, 10
+INC AX
+
+النتيجة:
+
+AX = 11
+
+DEC تنقص 1:
+
+DEC AX
+
+تصبح:
+
+AX = 10
+
+يعني:
+
+INC → +1
+DEC → -1
+10. MUL
+
+هنا لازم نركز شوية.
+
+لو عندك:
+
+MOV AL, 10
+MOV BL, 5
+
+MUL BL
+
+في حالة MUL BL:
+
+AL × BL
+
+والنتيجة تتحط في:
+
+AX
+
+يعني:
+
+10 × 5 = 50
+
+فتصبح:
+
+AX = 50
+
+لو:
+
+MOV AX, 100
+MOV BX, 5
+
+MUL BX
+
+في 8086:
+
+AX × BX
+
+والنتيجة 32-bit بتتحط في:
+
+DX:AX
+
+يعني:
+
+DX = High 16 bits
+AX = Low 16 bits
+11. DIV
+
+نفس الفكرة لكن قسمة.
+
+لو:
+
+MOV AX, 20
+MOV BL, 5
+
+DIV BL
+
+الناتج:
+
+AL = quotient
+AH = remainder
+
+يعني:
+
+20 / 5
+
+AL = 4
+AH = 0
+
+أما لو:
+
+DIV BX
+
+فالمقسوم بيكون:
+
+DX:AX
+
+والنتيجة:
+
+AX = quotient
+DX = remainder
+
+ودي مهمة جدًا في الـ Reverse Engineering.
+
+12. Flags Register
+
+الـ Flags عبارة عن bits بتقولك إيه اللي حصل نتيجة آخر عملية.
+
+أهمهم:
+
+ZF → Zero Flag
+SF → Sign Flag
+CF → Carry Flag
+OF → Overflow Flag
+
+مثلاً:
+
+MOV AX, 10
+SUB AX, 10
+
+النتيجة:
+
+AX = 0
+
+بالتالي:
+
+ZF = 1
+
+يعني:
+
+نتيجة العملية = صفر.
+
+مثال تاني:
+
+MOV AX, 5
+SUB AX, 10
+
+النتيجة سالبة:
+
+AX = -5
+
+فيكون:
+
+SF = 1
+13. CMP
+
+دي من أهم التعليمات.
+
+CMP AX, BX
+
+ممكن تعتبرها:
+
+AX - BX
+
+لكن من غير ما تخزن النتيجة في AX.
+
+يعني:
+
+MOV AX, 10
+MOV BX, 10
+
+CMP AX, BX
+
+المعالج يعمل داخليًا:
+
+10 - 10 = 0
+
+لكن AX يفضل:
+
+AX = 10
+
+وفي نفس الوقت:
+
+ZF = 1
+
+لأن النتيجة صفر.
+
+14. CMP + JE
+
+هنا يبدأ موضوع الـ if.
+
+MOV AX, 10
+MOV BX, 10
+
+CMP AX, BX
+JE equal
+
+JE = Jump if Equal
+
+يعني:
+
+هل AX == BX ؟
+
+نعم → روح equal
+لا  → كمل
+
+مثال كامل:
+
+MOV AX, 10
+MOV BX, 10
+
+CMP AX, BX
+JE equal
+
+MOV CX, 0
+JMP done
+
+equal:
+MOV CX, 1
+
+done:
+
+النتيجة:
+
+CX = 1
+15. JNE
+
+JNE = Jump if Not Equal
+
+CMP AX, BX
+JNE not_equal
+
+يعني:
+
+AX != BX ؟
+16. JG / JL
+
+ممكن تعمل مقارنات أكبر وأصغر:
+
+CMP AX, BX
+
+JG greater
+JL less
+
+يعني:
+
+AX > BX → JG
+AX < BX → JL
+
+مثلاً:
+
+MOV AX, 20
+MOV BX, 10
+
+CMP AX, BX
+JG greater
+
+greater:
+    MOV CX, 1
+
+لأن:
+
+20 > 10
+17. JMP
+
+JMP قفزة غير مشروطة.
+
+مثلاً:
+
+MOV AX, 10
+
+JMP skip
+
+MOV AX, 50
+
+skip:
+
+السطر:
+
+MOV AX, 50
+
+لن يتم تنفيذه.
+
+لأن:
+
+JMP skip
+     ↓
+skip:
+18. Labels
+
+الـ Label مجرد اسم لمكان في الكود.
+
+مثلاً:
+
+start:
+    MOV AX, 10
+
+loop_here:
+    INC AX
+    JMP loop_here
+
+هنا:
+
+start:
+loop_here:
+
+مش instructions.
+
+دي أسماء لعناوين في الكود عشان نقدر نعمل:
+
+JMP start
+JMP loop_here
+19. LOOP و CX
+
+8086 عنده instruction اسمها:
+
+LOOP
+
+وهي مرتبطة بالـ CX.
+
+مثلاً:
+
+MOV CX, 5
+
+again:
+    INC AX
+    LOOP again
+
+اللي يحصل:
+
+CX = 5
+↓
+INC AX
+↓
+CX = 4
+↓
+هل CX = 0 ؟
+لا → again
+↓
+INC AX
+↓
+CX = 3
+↓
+...
+↓
+CX = 0
+↓
+Stop
+
+يعني الحلقة اتنفذت 5 مرات.
+
+20. LOOP كأنها For
+
+في C:
+
+for(int i = 0; i < 5; i++)
+{
+    x++;
+}
+
+تقريبًا في Assembly:
+
+MOV CX, 5
+
+again:
+    INC AX
+    LOOP again
+21. Loop باستخدام CMP + Jump
+
+ممكن تعمل Loop بنفسك بدون LOOP.
+
+مثلاً:
+
+MOV CX, 0
+
+again:
+    INC CX
+
+    CMP CX, 5
+    JL again
+
+فكر فيها كأنها:
+
+while(CX < 5)
+{
+    CX++;
+}
+22. INT 21h
+
+دي من أشهر حاجات DOS Assembly.
+
+بتستخدم خدمات DOS.
+
+الطريقة:
+
+MOV AH, service
+INT 21h
+
+الـ AH بيحدد أنت عايز تعمل إيه.
+
+قراءة حرف
+MOV AH, 01h
+INT 21h
+
+المستخدم يدخل حرف.
+
+الحرف يرجع في:
+
+AL
+
+مثلاً المستخدم كتب:
+
+A
+
+يبقى:
+
+AL = 'A'
+23. طباعة حرف
+MOV DL, 'A'
+MOV AH, 02h
+INT 21h
+
+هتطبع:
+
+A
+
+لاحظ هنا:
+
+DL = character
+AH = 02h
+24. طباعة String
+
+لو عندك:
+
+msg DB 'Hello World$'
+
+تقدر تعمل:
+
+MOV DX, OFFSET msg
+MOV AH, 09h
+INT 21h
+
+ليه $؟
+
+لأن خدمة 09h بتعتبر $ علامة نهاية الـ string.
+
+25. إنهاء البرنامج
+MOV AH, 4Ch
+INT 21h
+
+يعني:
+
+DOS، انهي البرنامج.
+
+26. INT 10h
+
+دي BIOS video services.
+
+مثلاً فيه خدمات للتعامل مع الشاشة مثل:
+
+تغيير مكان الـ cursor
+مسح الشاشة
+التعامل مع الـ video
+
+فـ:
+
+INT 10h
+
+مش زي:
+
+INT 21h
+
+الأولى مرتبطة بخدمات الفيديو/BIOS، والثانية غالبًا بخدمات DOS.
+
+27. مثال يجمع كل الكلام
+
+خلينا نعمل برنامج بسيط:
+
+لو الرقمين متساويين اطبع Equal
+
+.data
+msg DB 'Equal$'
+
+.code
+
+MOV AX, @data
+MOV DS, AX
+
+MOV AX, 10
+MOV BX, 10
+
+CMP AX, BX
+JNE not_equal
+
+MOV DX, OFFSET msg
+MOV AH, 09h
+INT 21h
+
+JMP done
+
+not_equal:
+
+done:
+MOV AH, 4Ch
+INT 21h
+
+امشِ معاه:
+
+AX = 10
+BX = 10
+   ↓
+CMP AX, BX
+   ↓
+10 - 10 = 0
+   ↓
+ZF = 1
+   ↓
+JNE ؟
+   ↓
+لا، لأنهم Equal
+   ↓
+اطبع Equal
+   ↓
+Exit
+28. الصورة الكبيرة اللي تحفظها
+
+أهم حاجة متحاولش تحفظ كل instruction لوحدها. اربطهم ببعض:
+
+                    CPU
+                     │
+        ┌────────────┼────────────┐
+        ↓            ↓            ↓
+    Registers      Flags        Memory
+        │            │            │
+   ┌────┼────┐       │       ┌────┼────┐
+   AX   BX   CX      ZF      Code     Data
+   DX                 SF        ↑       ↑
+   │                  CF       CS      DS
+   │
+ AH ─ AL
+ BH ─ BL
+ CH ─ CL
+ DH ─ DL
+
+وبعدين الـ instructions:
+
+MOV  → نقل
+ADD  → جمع
+SUB  → طرح
+INC  → +1
+DEC  → -1
+MUL  → ضرب
+DIV  → قسمة
+
+CMP  → مقارنة
+       ↓
+     Flags
+       ↓
+  ┌────┼─────┐
+  JE   JNE   JG/JL
+       ↓
+      Jump
+
+والـ Loop:
+
+CX
+ ↓
+LOOP
+ ↓
+نرجع للـ Label
+
+وأخيرًا:
+
+INT 21h
+   │
+   ├── AH=01h → Input character
+   ├── AH=02h → Print character
+   ├── AH=09h → Print string
+   └── AH=4Ch → Exit
