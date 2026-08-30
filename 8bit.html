@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8086 Assembly - Registers & Instructions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        content {
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        pre {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #2d3748;
+            font-size: 0.95em;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+
+        .diagram {
+            background: #f9f9f9;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .example {
+            background: #e8f4f8;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .example strong {
+            color: #17a2b8;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .important {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: right;
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .toc {
+            background: #f0f7ff;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid #667eea;
+        }
+
+        .toc h2 {
+            margin-top: 0;
+        }
+
+        .toc ol {
+            margin-right: 25px;
+            line-height: 1.8;
+        }
+
+        .toc li {
+            margin-bottom: 8px;
+        }
+
+        footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        em {
+            color: #764ba2;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖥️ 8086 Assembly</h1>
+            <p>شرح مفصل للمعالجات والتعليمات</p>
+        </header>
+
+        <content>
+            <div class="toc">
+                <h2>📑 محتويات الدرس</h2>
+                <ol>
+                    <li>الـ Registers الأساسية (AX, BX, CX, DX)</li>
+                    <li>AH و AL (تقسيم الـ Register)</li>
+                    <li>Segment Registers</li>
+                    <li>تهيئة Data Segment</li>
+                    <li>تعليمة MOV</li>
+                    <li>العمليات الحسابية (ADD, SUB, INC, DEC)</li>
+                    <li>الضرب والقسمة (MUL, DIV)</li>
+                    <li>Flags Register</li>
+                    <li>المقارنة والقفزات الشرطية</li>
+                    <li>الحلقات والـ Labels</li>
+                    <li>خدمات DOS و BIOS</li>
+                </ol>
+            </div>
+
+            <div class="section">
+                <h2>1️⃣ Registers الأساسية - 8086</h2>
+                <p>الـ Register ببساطة مكان صغير جدًا وسريع جوه المعالج بيخزن قيمة مؤقتة.</p>
+                <p>الـ Registers الأساسية:</p>
+                <pre>AX
+BX
+CX
+DX</pre>
+                <p>وكل واحد فيهم <strong>16-bit</strong>.</p>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 1234h</pre>
+                    <p style="margin-top: 10px;">يعني:</p>
+                    <div class="diagram">AX
+┌────────────────┐
+│    1234h       │
+└────────────────┘
+      16 bit</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>2️⃣ AH و AL - تقسيم الـ Register</h2>
+                <p>الـ AX نفسه 16-bit، ممكن نقسمه لنصفين:</p>
+                <div class="diagram">AX
+┌────────┬────────┐
+│   AH   │   AL   │
+│ 8 bit  │ 8 bit  │
+└────────┴────────┘</div>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 1234h</pre>
+                    <p style="margin-top: 10px;">يبقى:</p>
+                    <pre>AH = 12h
+AL = 34h</pre>
+                </div>
+                <p>ونفس الفكرة تنطبق على الـ Registers الأخرى:</p>
+                <pre>BX → BH + BL
+CX → CH + CL
+DX → DH + DL</pre>
+            </div>
+
+            <div class="section">
+                <h2>3️⃣ Segment Registers</h2>
+                <p>دي نقطة مهمة جدًا في 8086. عندنا أربعة Segment Registers:</p>
+                <pre>CS → Code Segment
+DS → Data Segment
+SS → Stack Segment
+ES → Extra Segment</pre>
+                <p>فكر فيها كأن الذاكرة متقسمة لمناطق:</p>
+                <div class="diagram">Memory
+│
+├── Code Segment
+│     ↑
+│     CS
+│
+├── Data Segment
+│     ↑
+│     DS
+│
+├── Stack Segment
+│     ↑
+│     SS
+│
+└── Extra Segment
+      ↑
+      ES</div>
+                
+                <h3>🔷 CS - Code Segment</h3>
+                <p>بيحدد المكان اللي فيه الكود/التعليمات. الـ CPU لما ينفذ instruction، بيستخدم CS مع IP للوصول للتعليمة.</p>
+                
+                <h3>🔷 DS - Data Segment</h3>
+                <p>غالبًا بيستخدم للوصول للـ Data.</p>
+                
+                <h3>🔷 SS - Stack Segment</h3>
+                <p>خاص بالـ Stack (عشان PUSH و POP).</p>
+            </div>
+
+            <div class="section">
+                <h2>4️⃣ التعليمات الأساسية</h2>
+                
+                <h3>📌 MOV - نقل البيانات</h3>
+                <p>MOV معناها انسخ قيمة من مكان لمكان.</p>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 10
+MOV BX, AX
+
+النتيجة:
+AX = 10
+BX = 10</pre>
+                </div>
+
+                <h3>📌 ADD - الجمع</h3>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 10
+ADD AX, 5
+
+النتيجة:
+AX = 15</pre>
+                </div>
+
+                <h3>📌 SUB - الطرح</h3>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 20
+SUB AX, 5
+
+النتيجة:
+AX = 15</pre>
+                </div>
+
+                <h3>📌 INC / DEC - الزيادة والنقصان</h3>
+                <pre>INC AX  → AX = AX + 1
+DEC AX  → AX = AX - 1</pre>
+            </div>
+
+            <div class="section">
+                <h2>5️⃣ العمليات المتقدمة</h2>
+                
+                <h3>📌 MUL - الضرب</h3>
+                <div class="note">
+                    <strong>⚠️ نقطة مهمة:</strong> الضرب بيحتاج عناية خاصة.
+                </div>
+                <div class="example">
+                    <strong>مثال 1 - ضرب 8-bit:</strong>
+                    <pre>MOV AL, 10
+MOV BL, 5
+MUL BL
+
+النتيجة:
+AX = 50</pre>
+                </div>
+                <div class="example">
+                    <strong>مثال 2 - ضرب 16-bit:</strong>
+                    <pre>MOV AX, 100
+MOV BX, 5
+MUL BX
+
+النتيجة:
+DX:AX = 500
+(DX = High bits, AX = Low bits)</pre>
+                </div>
+
+                <h3>📌 DIV - القسمة</h3>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 20
+MOV BL, 5
+DIV BL
+
+النتيجة:
+AL = 4 (quotient)
+AH = 0 (remainder)</pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>6️⃣ Flags Register</h2>
+                <p>الـ Flags عبارة عن bits بتقولك إيه اللي حصل نتيجة آخر عملية:</p>
+                <pre>ZF → Zero Flag (النتيجة = 0)
+SF → Sign Flag (النتيجة سالبة)
+CF → Carry Flag (حصل carry)
+OF → Overflow Flag (حصل overflow)</pre>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 10
+SUB AX, 10
+
+النتيجة: AX = 0
+بالتالي: ZF = 1</pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>7️⃣ المقارنة والقفزات الشرطية</h2>
+                
+                <h3>📌 CMP - المقارنة</h3>
+                <p>CMP AX, BX تعني: <code>AX - BX</code> بدون تخزين النتيجة.</p>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV AX, 10
+MOV BX, 10
+CMP AX, BX
+
+يحدث داخليًا: 10 - 10 = 0
+النتيجة: ZF = 1 (متساويين)</pre>
+                </div>
+
+                <h3>📌 القفزات الشرطية</h3>
+                <table>
+                    <tr>
+                        <th>التعليمة</th>
+                        <th>المعنى</th>
+                    </tr>
+                    <tr>
+                        <td>JE</td>
+                        <td>Jump if Equal (اقفز إذا كانوا متساويين)</td>
+                    </tr>
+                    <tr>
+                        <td>JNE</td>
+                        <td>Jump if Not Equal (اقفز إذا كانوا مختلفين)</td>
+                    </tr>
+                    <tr>
+                        <td>JG</td>
+                        <td>Jump if Greater (اقفز إذا كان أكبر)</td>
+                    </tr>
+                    <tr>
+                        <td>JL</td>
+                        <td>Jump if Less (اقفز إذا كان أصغر)</td>
+                    </tr>
+                    <tr>
+                        <td>JMP</td>
+                        <td>Jump Unconditional (قفزة مطلقة)</td>
+                    </tr>
+                </table>
+
+                <div class="example">
+                    <strong>مثال - If Statement:</strong>
+                    <pre>MOV AX, 10
+MOV BX, 10
+
+CMP AX, BX
+JE equal
+
+MOV CX, 0
+JMP done
+
+equal:
+    MOV CX, 1
+
+done:</pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>8️⃣ الحلقات</h2>
+                
+                <h3>📌 LOOP مع CX</h3>
+                <p>8086 عنده تعليمة LOOP مرتبطة بـ CX:</p>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>MOV CX, 5
+
+again:
+    INC AX
+    LOOP again
+
+// الحلقة ستتكرر 5 مرات</pre>
+                </div>
+
+                <h3>📌 حلقة بدون LOOP</h3>
+                <div class="example">
+                    <strong>مثال - While Loop:</strong>
+                    <pre>MOV CX, 0
+
+again:
+    INC CX
+    CMP CX, 5
+    JL again
+
+// مثل: while(CX < 5) { CX++; }</pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>9️⃣ Labels</h2>
+                <p>الـ Label مجرد اسم لمكان في الكود لكي نستطيع الرجوع إليه لاحقًا:</p>
+                <div class="example">
+                    <strong>مثال:</strong>
+                    <pre>start:
+    MOV AX, 10
+
+loop_here:
+    INC AX
+    JMP loop_here</pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔟 خدمات DOS - INT 21h</h2>
+                <p>دي من أشهر حاجات DOS Assembly:</p>
+                <pre>MOV AH, service
+INT 21h</pre>
+
+                <table>
+                    <tr>
+                        <th>AH</th>
+                        <th>الخدمة</th>
+                        <th>الشرح</th>
+                    </tr>
+                    <tr>
+                        <td>01h</td>
+                        <td>Input character</td>
+                        <td>قراءة حرف من لوحة المفاتيح (النتيجة في AL)</td>
+                    </tr>
+                    <tr>
+                        <td>02h</td>
+                        <td>Print character</td>
+                        <td>طباعة حرف واحد (من DL)</td>
+                    </tr>
+                    <tr>
+                        <td>09h</td>
+                        <td>Print string</td>
+                        <td>طباعة نص (نهايته $)</td>
+                    </tr>
+                    <tr>
+                        <td>4Ch</td>
+                        <td>Exit</td>
+                        <td>إنهاء البرنامج</td>
+                    </tr>
+                </table>
+
+                <div class="example">
+                    <strong>مثال - طباعة حرف:</strong>
+                    <pre>MOV DL, 'A'
+MOV AH, 02h
+INT 21h
+
+// سيطبع: A</pre>
+                </div>
+
+                <div class="example">
+                    <strong>مثال - طباعة نص:</strong>
+                    <pre>msg DB 'Hello World$'
+
+MOV DX, OFFSET msg
+MOV AH, 09h
+INT 21h
+
+// سيطبع: Hello World
+// لاحظ: $ تحدد نهاية النص</pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>1️⃣1️⃣ مثال شامل</h2>
+                <div class="note">
+                    <strong>برنامج يقارن بين رقمين:</strong>
+                </div>
+                <pre>.data
+msg DB 'Equal$'
+
+.code
+
+MOV AX, @data
+MOV DS, AX
+
+MOV AX, 10
+MOV BX, 10
+
+CMP AX, BX
+JNE not_equal
+
+MOV DX, OFFSET msg
+MOV AH, 09h
+INT 21h
+
+JMP done
+
+not_equal:
+
+done:
+    MOV AH, 4Ch
+    INT 21h</pre>
+                <p><strong>شرح الكود:</strong></p>
+                <ol>
+                    <li>AX = 10, BX = 10</li>
+                    <li>المقارنة: 10 - 10 = 0 → ZF = 1</li>
+                    <li>JNE: متساويين فلا نقفز</li>
+                    <li>طباعة "Equal"</li>
+                    <li>الخروج من البرنامج</li>
+                </ol>
+            </div>
+
+            <div class="section">
+                <h2>🎯 الخلاصة</h2>
+                <div class="diagram">                    CPU
+                     │
+        ┌────────────┼────────────┐
+        ↓            ↓            ↓
+    Registers      Flags        Memory
+        │            │            │
+   ┌────┼────┐       │       ┌────┼────┐
+   AX   BX   CX      ZF      Code     Data
+   DX                 SF        ↑       ↑
+   │                  CF       CS      DS
+   │
+ AH ─ AL
+ BH ─ BL
+ CH ─ CL
+ DH ─ DL</div>
+
+                <div class="important">
+                    <strong>أهم حاجة:</strong> لا تحاول تحفظ كل instruction لوحدها. اربطهم ببعض وافهم كيف يعملون مع بعضهم البعض.
+                </div>
+            </div>
+        </content>
+
+        <footer>
+            <p>📚 شرح مفصل لـ 8086 Assembly - جميع الحقوق محفوظة</p>
+            <p>آخر تحديث: 2026</p>
+        </footer>
+    </div>
+</body>
+</html>
